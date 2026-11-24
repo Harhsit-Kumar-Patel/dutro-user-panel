@@ -1,0 +1,21 @@
+# Dependencies
+node_modules
+.pnp
+.pnp.js
+
+# Production build artifacts
+dist
+dist-ssr
+
+# Environment & local files
+.env
+.env.local
+.env.*.local
+*.local
+.DS_Store
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Large reference PDF
+Dutro_User Guide Content.pdf

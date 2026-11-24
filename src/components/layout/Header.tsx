@@ -110,6 +110,7 @@ export const Header: React.FC = () => {
     'Data Protection Officer',
     'Program Owner',
     'Department Owner',
+    'Department POC',
     'Customer',
     'User',
   ];

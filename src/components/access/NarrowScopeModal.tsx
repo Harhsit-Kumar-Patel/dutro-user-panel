@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { User, PermissionReach } from '../../types';
 import { Modal } from '../common/Modal';
@@ -9,22 +9,44 @@ interface NarrowScopeModalProps {
   user: User | null;
   isOpen: boolean;
   onClose: () => void;
+  defaultPermissionId?: string;
 }
 
-export const NarrowScopeModal: React.FC<NarrowScopeModalProps> = ({ user, isOpen, onClose }) => {
+export const NarrowScopeModal: React.FC<NarrowScopeModalProps> = ({
+  user,
+  isOpen,
+  onClose,
+  defaultPermissionId,
+}) => {
   const { addCustomGrant } = useApp();
 
-  const [selectedPermissionId, setSelectedPermissionId] = useState(PERMISSION_DEFINITIONS[0].id);
+  const [selectedPermissionId, setSelectedPermissionId] = useState(
+    defaultPermissionId || PERMISSION_DEFINITIONS[0].id
+  );
   const [reach, setReach] = useState<PermissionReach>('Can open only');
   const [reason, setReason] = useState('');
 
+  useEffect(() => {
+    if (defaultPermissionId) {
+      setSelectedPermissionId(defaultPermissionId);
+    }
+  }, [defaultPermissionId]);
+
   if (!user) return null;
 
-  const selectedDef = PERMISSION_DEFINITIONS.find((p) => p.id === selectedPermissionId);
+  const selectedDef = PERMISSION_DEFINITIONS.find((p) => p.id === selectedPermissionId) || {
+    id: selectedPermissionId,
+    landscape: 'Administration' as const,
+    module: 'Compliance Action',
+    feature: selectedPermissionId,
+    action: 'View' as const,
+    defaultReach: 'Everywhere' as const,
+    description: `Granular action: ${selectedPermissionId}`,
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDef || !reason.trim()) return;
+    if (!reason.trim()) return;
 
     addCustomGrant(user.id, {
       permissionId: selectedDef.id,
@@ -66,6 +88,11 @@ export const NarrowScopeModal: React.FC<NarrowScopeModalProps> = ({ user, isOpen
             onChange={(e) => setSelectedPermissionId(e.target.value)}
             className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900"
           >
+            {!PERMISSION_DEFINITIONS.some((p) => p.id === selectedPermissionId) && (
+              <option value={selectedPermissionId}>
+                [Granular Action] {selectedPermissionId}
+              </option>
+            )}
             {PERMISSION_DEFINITIONS.map((p) => (
               <option key={p.id} value={p.id}>
                 [{p.landscape}] {p.module} → {p.feature} ({p.action})
